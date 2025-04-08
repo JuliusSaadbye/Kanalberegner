@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Luftberegner</title>
+  <style>
+    :root {
+      --primary: #4e618f;
+      --bg: #f5faff;
+      --card: #ffffff;
+      --border: #dee2e6;
+      --text: #212529;
+      --input-bg: #eef3f7;
+      --result-bg: #f1f3f5;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg);
+      margin: 0;
+      padding: 2rem;
+      color: var(--text);
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: var(--card);
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 0 20px rgba(0,0,0,0.05);
+    }
+    h1 {
+      text-align: center;
+      color: var(--primary);
+    }
+    .section {
+      margin-bottom: 2rem;
+    }
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .button {
+      padding: 1rem;
+      flex: 1;
+      min-width: 120px;
+      border: 2px solid var(--primary);
+      border-radius: 8px;
+      background: white;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .button:hover, .button.active {
+      background: var(--primary);
+      color: white;
+    }
+    label {
+      font-weight: 500;
+      display: block;
+      margin-top: 1rem;
+    }
+    input {
+      padding: 0.6rem;
+      width: 100%;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--input-bg);
+    }
+    input:read-only {
+      background: var(--result-bg);
+      border-style: dashed;
+    }
+    .result-block {
+      margin-top: 1rem;
+      background: var(--result-bg);
+      padding: 1rem;
+      border-left: 4px solid var(--primary);
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>💨 Luftberegner</h1>
+
+    <div class="section">
+      <strong>Kanalform</strong>
+      <div class="buttons">
+        <div class="button" id="btn-rekt">▭ Rektangulær</div>
+        <div class="button" id="btn-circ">⚪ Cirkulær</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <strong>Vælg én kendt parameter</strong>
+      <div class="buttons">
+        <div class="button" id="btn-v">→ Hastighed (v)</div>
+        <div class="button" id="btn-q">💨 Luftmængde (q)</div>
+        <div class="button" id="btn-dp">↓ Tryktab (△P)</div>
+      </div>
+    </div>
+
+    <div class="section" id="dim-rekt">
+      <label for="a">A-mål (mm)</label>
+      <input type="number" id="a" />
+      <label for="b">B-mål (mm)</label>
+      <input type="number" id="b" />
+    </div>
+
+    <div class="section" id="dim-circ" style="display:none">
+      <label for="d">Ø (mm)</label>
+      <input type="number" id="d" />
+    </div>
+
+    <div class="section">
+      <label id="input-label">Indtast værdi</label>
+      <input type="number" id="input-param" />
+    </div>
+
+    <div class="section">
+      <label>Areal (m²)</label>
+      <input type="number" id="areal" readonly />
+      <div id="hd-block">
+        <label>Hydraulisk diameter (mm)</label>
+        <input type="number" id="hd" readonly />
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="result-block" id="result-q" style="display:none;">💨 Luftmængde: <span id="q-out"></span> m³/h</div>
+      <div class="result-block" id="result-v" style="display:none;">→ Hastighed: <span id="v-out"></span> m/s</div>
+      <div class="result-block" id="result-dp" style="display:none;">↓ Tryktab: <span id="dp-out"></span> Pa/m</div>
+    </div>
+  </div>
+
+  <script>
+    // === DOM elementer ===
+    const btns = {
+      rekt: document.getElementById('btn-rekt'),
+      circ: document.getElementById('btn-circ'),
+      v: document.getElementById('btn-v'),
+      q: document.getElementById('btn-q'),
+      dp: document.getElementById('btn-dp')
+    };
+    const dims = {
+      rekt: document.getElementById('dim-rekt'),
+      circ: document.getElementById('dim-circ')
+    };
+    const a = document.getElementById('a');
+    const b = document.getElementById('b');
+    const d = document.getElementById('d');
+    const areal = document.getElementById('areal');
+    const hd = document.getElementById('hd');
+    const hdBlock = document.getElementById('hd-block');
+    const inputParam = document.getElementById('input-param');
+    const inputLabel = document.getElementById('input-label');
+    const qOut = document.getElementById('q-out');
+    const vOut = document.getElementById('v-out');
+    const dpOut = document.getElementById('dp-out');
+    const resQ = document.getElementById('result-q');
+    const resV = document.getElementById('result-v');
+    const resDP = document.getElementById('result-dp');
+
+    let kanalform = null;
+    let param = null;
+
+    function toggleButton(btn, group, value) {
+      group.forEach(b => b.classList.remove('active'));
+      if (value === null) return null;
+      btn.classList.add('active');
+      return value;
+    }
+
+    // Kanalform valg
+    btns.rekt.onclick = () => {
+      kanalform = toggleButton(btns.rekt, [btns.rekt, btns.circ], kanalform === 'rekt' ? null : 'rekt');
+      dims.rekt.style.display = kanalform === 'rekt' ? 'block' : 'none';
+      dims.circ.style.display = 'none';
+      hdBlock.style.display = kanalform === 'rekt' ? 'block' : 'none';
+      calculate();
+    };
+
+    btns.circ.onclick = () => {
+      kanalform = toggleButton(btns.circ, [btns.rekt, btns.circ], kanalform === 'circ' ? null : 'circ');
+      dims.rekt.style.display = 'none';
+      dims.circ.style.display = kanalform === 'circ' ? 'block' : 'none';
+      hdBlock.style.display = 'none';
+      calculate();
+    };
+
+    // Parameter valg
+    btns.v.onclick = () => {
+      param = toggleButton(btns.v, [btns.v, btns.q, btns.dp], param === 'v' ? null : 'v');
+      inputLabel.innerText = 'Indtast Hastighed (m/s)';
+      updateResultFields();
+    };
+
+    btns.q.onclick = () => {
+      param = toggleButton(btns.q, [btns.v, btns.q, btns.dp], param === 'q' ? null : 'q');
+      inputLabel.innerText = 'Indtast Luftmængde (m³/h)';
+      updateResultFields();
+    };
+
+    btns.dp.onclick = () => {
+      param = toggleButton(btns.dp, [btns.v, btns.q, btns.dp], param === 'dp' ? null : 'dp');
+      inputLabel.innerText = 'Indtast Tryktab (Pa/m)';
+      updateResultFields();
+    };
+
+    document.querySelectorAll('input').forEach(el => el.addEventListener('input', calculate));
+
+    function updateResultFields() {
+      resQ.style.display = param === 'v' || param === 'dp' ? 'block' : 'none';
+      resV.style.display = param === 'q' || param === 'dp' ? 'block' : 'none';
+      resDP.style.display = param === 'v' || param === 'q' ? 'block' : 'none';
+      calculate();
+    }
+
+    function calculate() {
+      let A = 0, HD = 0;
+      const aVal = parseFloat(a?.value) || 0;
+      const bVal = parseFloat(b?.value) || 0;
+      const dVal = parseFloat(d?.value) || 0;
+
+      if (kanalform === 'rekt' && aVal > 0 && bVal > 0) {
+        A = (aVal * bVal) / 1e6;
+        HD = (2 * aVal * bVal) / (aVal + bVal);
+        hd.value = HD.toFixed(1);
+      } else if (kanalform === 'circ' && dVal > 0) {
+        A = Math.PI * Math.pow(dVal / 1000, 2) / 4;
+        HD = dVal;
+      }
+
+      areal.value = A ? A.toFixed(4) : '';
+
+      const val = parseFloat(inputParam.value);
+      if (!val || A === 0 || HD === 0 || !param) return;
+
+      let v = 0;
+      if (param === 'v') v = val;
+      if (param === 'q') v = val / (A * 3600);
+      if (param === 'dp') v = solveVFromDP(val, HD);
+
+      const q = v * A * 3600;
+      const dp = calcDP(v, HD);
+
+      vOut.innerText = v.toFixed(2);
+      qOut.innerText = q.toFixed(1);
+      dpOut.innerText = dp.toFixed(4); // <- 4 decimaler
+    }
+
+    function calcDP(v, hd) {
+      const d = hd / 1000; // omregn til meter
+      const rho = 1.205; //kg/m3 Densitet 
+      const nu = 15.11; // m2/s*10^-6
+      const dp_m = ((1 / Math.pow(Math.log10(0.143 * ((d * v / nu) * 1000000)), 2)) * 0.31) / d * (1.2 * v * v / 2);
+      return dp_m
+    }
+
+    function solveVFromDP(dpTarget, hd) {
+      const d = hd / 1000;
+      let v = 0.1;
+      for (let i = 0; i < 200; i++) {
+        const dp = calcDP(v, hd);
+        if (Math.abs(dp - dpTarget) < 0.1) break;
+        v += 0.05;
+      }
+      return v;
+    }
+  </script>
+</body>
+</html>
