@@ -16,26 +16,35 @@
     }
     * { box-sizing: border-box; }
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: var(--bg);
-      margin: 0;
-      padding: 2rem;
-      color: var(--text);
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        padding: 1rem;
+        margin: 0;
+        background: var(--bg);
+        font-family: 'Segoe UI', sans-serif;
+        color: var(--text);
+        line-height: 1.3; /* Standard er omkring 1.5 */
     }
     .container {
-      max-width: 800px;
-      margin: auto;
-      background: var(--card);
-      border-radius: 12px;
-      padding: 2rem;
-      box-shadow: 0 0 20px rgba(0,0,0,0.05);
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        max-width: 800px;
+        margin: auto;
+        background: var(--card);
+        border-radius: 12px;
+        padding: 1rem;
+        box-shadow: 0 0 20px rgba(0,0,0,0.05);
+        
     }
     h1 {
       text-align: center;
       color: var(--primary);
     }
     .section {
-      margin-bottom: 2rem;
+      margin-bottom: 0.75rem;
     }
     .buttons {
       display: flex;
@@ -43,7 +52,7 @@
       gap: 1rem;
     }
     .button {
-      padding: 1rem;
+      padding: 0.5rem;
       flex: 1;
       min-width: 120px;
       border: 2px solid var(--primary);
@@ -74,9 +83,9 @@
       border-style: dashed;
     }
     .result-block {
-      margin-top: 1rem;
+      margin-top: 0.5rem;
       background: var(--result-bg);
-      padding: 1rem;
+      padding: 0.75rem;
       border-left: 4px solid var(--primary);
       border-radius: 6px;
     }
@@ -89,16 +98,16 @@
     <div class="section">
       <strong>Kanalform</strong>
       <div class="buttons">
-        <div class="button" id="btn-rekt">▭ Rektangulær</div>
         <div class="button" id="btn-circ">⚪ Cirkulær</div>
+        <div class="button" id="btn-rekt">▭ Rektangulær</div>
       </div>
     </div>
 
     <div class="section">
       <strong>Vælg én kendt parameter</strong>
       <div class="buttons">
-        <div class="button" id="btn-v">→ Hastighed (v)</div>
         <div class="button" id="btn-q">💨 Luftmængde (q)</div>
+        <div class="button" id="btn-v">→ Hastighed (v)</div>
         <div class="button" id="btn-dp">↓ Tryktab (△P)</div>
       </div>
     </div>
