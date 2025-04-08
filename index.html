@@ -16,32 +16,27 @@
     }
     * { box-sizing: border-box; }
     body {
-        display: flex;
-        flex-direction: column;
-        min-height: 100vh;
-        padding: 1rem;
         margin: 0;
+        padding: 0.5rem;
         background: var(--bg);
         font-family: 'Segoe UI', sans-serif;
         color: var(--text);
         line-height: 1.3; /* Standard er omkring 1.5 */
     }
     .container {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
         max-width: 800px;
-        margin: auto;
+        margin: 0 auto;
         background: var(--card);
-        border-radius: 12px;
-        padding: 1rem;
-        box-shadow: 0 0 20px rgba(0,0,0,0.05);
+        border-radius: 8px;
+        padding: 0.75rem;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05);
         
     }
     h1 {
-      text-align: center;
-      color: var(--primary);
+        text-align: center;
+        color: var(--primary);
+        font-size: 1.2rem;
+        margin: 0.5rem 0;
     }
     .section {
       margin-bottom: 0.75rem;
@@ -93,7 +88,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>💨 Kanalberegner af JUGS</h1>
+    <h1>💨 JUGS Kanalberegner</h1>
 
     <div class="section">
       <strong>Kanalform</strong>
@@ -120,7 +115,7 @@
     </div>
 
     <div class="section" id="dim-circ" style="display:none">
-      <label for="d">Diameter (mm)</label>
+      <label for="d">Ø (mm)</label>
       <input type="number" id="d" />
     </div>
 
@@ -258,7 +253,7 @@
 
       vOut.innerText = v.toFixed(2);
       qOut.innerText = q.toFixed(1);
-      dpOut.innerText = dp.toFixed(4); // <- 4 decimaler
+      dpOut.innerText = dp.toFixed(3); // <- 3 decimaler
     }
 
     function calcDP(v, hd) {
